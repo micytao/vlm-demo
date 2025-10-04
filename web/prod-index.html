@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmolLM2 Enterprise Demo - RHAIIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Light theme colors */
+            --primary-color: #dc2626;
+            --primary-hover: #b91c1c;
+            --secondary-color: #f3f4f6;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --warning-color: #f59e0b;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --border-color: #e5e7eb;
+            --border-focus: #dc2626;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #f87171;
+            --primary-hover: #dc2626;
+            --secondary-color: #374151;
+            --success-color: #34d399;
+            --success-hover: #10b981;
+            --danger-color: #f87171;
+            --danger-hover: #ef4444;
+            --warning-color: #fbbf24;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-tertiary: #374151;
+            --border-color: #4b5563;
+            --border-focus: #f87171;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            gap: 2rem;
+            grid-template-areas: 
+                "header header"
+                "video controls"
+                "inputs inputs";
+            grid-template-columns: 1fr 400px;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-areas: 
+                    "header"
+                    "video"
+                    "controls"
+                    "inputs";
+                grid-template-columns: 1fr;
+                padding: 1rem;
+                gap: 1.5rem;
+            }
+        }
+
+        .header {
+            grid-area: header;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-primary);
+            padding: 1.5rem 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .enterprise-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 1rem;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .video-section {
+            grid-area: video;
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #videoFeed {
+            width: 100%;
+            aspect-ratio: 4/3;
+            border-radius: var(--radius-lg);
+            background: #000;
+            object-fit: cover;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+
+        #videoFeed:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .controls-section {
+            grid-area: controls;
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            appearance: none;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgb(220 38 38 / 0.1);
+            background: var(--bg-primary);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--success-color), var(--success-hover));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--success-hover), var(--success-color));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, var(--danger-hover), var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .preset-btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .preset-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .inputs-section {
+            grid-area: inputs;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .inputs-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-card {
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgb(220 38 38 / 0.1);
+            background: var(--bg-primary);
+        }
+
+        textarea[readonly] {
+            background: var(--bg-tertiary);
+            cursor: default;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .status-ready {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-processing {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        .enterprise-info {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .enterprise-info strong {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>
+                <i class="fas fa-video"></i>
+                SmolLM2 Enterprise Demo
+                <span class="enterprise-badge">RHAIIS</span>
+            </h1>
+            <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
+
+        <div class="video-section">
+            <video id="videoFeed" autoplay playsinline></video>
+            <canvas id="canvas" class="hidden"></canvas>
+            <div id="statusIndicator" class="status-indicator status-ready">
+                <i class="fas fa-circle"></i>
+                <span>Ready to start</span>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="control-group">
+                <label for="baseURL">
+                    <i class="fas fa-server"></i>
+                    RHAIIS vLLM Endpoint
+                </label>
+                <div class="input-wrapper">
+                    <input type="text" id="baseURL" placeholder="Enter vLLM API endpoint (e.g., http://localhost:8000)">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('http://localhost:8000')">Local vLLM:8000</button>
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('')">Proxy</button>
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('')">Clear</button>
+                </div>
+                <div class="enterprise-info">
+                    <strong>🏢 Enterprise Setup:</strong> Using Red Hat AI Inference Server (RHAIIS) with vLLM backend.<br>
+                    <strong>Model:</strong> SmolVLM-500M-Instruct via OpenAI-compatible API<br>
+                    <strong>Default Port:</strong> 8000 (vLLM standard)
+                </div>
+            </div>
+
+            <div class="control-group">
+                <button id="testConnectionBtn" class="btn btn-primary" onclick="testConnection()" style="width: 100%; margin-bottom: 1rem;">
+                    <i class="fas fa-wifi"></i>
+                    <span>Test vLLM Connection</span>
+                </button>
+            </div>
+
+            <div class="control-group">
+                <label for="intervalSelect">
+                    <i class="fas fa-clock"></i>
+                    Request Interval
+                </label>
+                <select id="intervalSelect">
+                    <option value="500">500ms</option>
+                    <option value="1000" selected>1 second</option>
+                    <option value="2000">2 seconds</option>
+                    <option value="5000">5 seconds</option>
+                </select>
+            </div>
+
+            <button id="startButton" class="btn btn-primary">
+                <i class="fas fa-play"></i>
+                <span>Start Processing</span>
+            </button>
+        </div>
+
+        <div class="inputs-section">
+            <div class="input-card">
+                <h3>
+                    <i class="fas fa-comment-dots"></i>
+                    Instruction
+                </h3>
+                <textarea id="instructionText" placeholder="What would you like me to analyze in the video?"></textarea>
+            </div>
+
+            <div class="input-card">
+                <h3>
+                    <i class="fas fa-robot"></i>
+                    SmolVLM Response
+                </h3>
+                <textarea id="responseText" readonly placeholder="SmolVLM-500M-Instruct responses will appear here..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('canvas');
+        const baseURL = document.getElementById('baseURL');
+        const instructionText = document.getElementById('instructionText');
+        const responseText = document.getElementById('responseText');
+        const intervalSelect = document.getElementById('intervalSelect');
+        const startButton = document.getElementById('startButton');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Set default values
+        instructionText.value = "What do you see in this image?";
+        
+        // Smart API endpoint detection for RHAIIS/vLLM
+        function getDefaultAPIEndpoint() {
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            
+            // If opened as file:// (local file), default to vLLM port
+            if (protocol === 'file:') {
+                return "http://localhost:8000";
+            }
+            
+            // If running on localhost, try vLLM port
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return "http://localhost:8000";
+            }
+            
+            // If running on OpenShift or similar platform, use relative path to API
+            // This allows nginx to proxy to the RHAIIS model service
+            if (hostname.includes('apps') || hostname.includes('openshift') || 
+                hostname.includes('cluster') || hostname.includes('svc')) {
+                return ""; // Use relative path - nginx will proxy /v1/ to model service
+            }
+            
+            // If running on a server, assume vLLM API is on same host with port 8000
+            return `${protocol}//${hostname}:8000`;
+        }
+        
+        baseURL.value = getDefaultAPIEndpoint();
+
+        let stream;
+        let intervalId;
+        let isProcessing = false;
+
+        // Preset endpoint function
+        function setPresetEndpoint(url) {
+            baseURL.value = url;
+            baseURL.focus();
+            
+            // Update status message based on whether endpoint is set
+            if (stream) {
+                if (url.trim()) {
+                    updateStatus('ready', 'Camera ready - Click start to begin', 'check-circle');
+                    responseText.value = "Camera access granted. RHAIIS vLLM endpoint configured. Ready to start processing with SmolLM2-1.7B-Instruct.";
+                } else {
+                    updateStatus('ready', 'Camera ready - Using proxy endpoint', 'check-circle');
+                    responseText.value = "Camera access granted. Using proxy endpoint for RHAIIS vLLM API calls. Ready to start processing with SmolVLM-500M-Instruct.";
+                }
+            }
+        }
+
+        // Test connection function for vLLM API
+        async function testConnection() {
+            const endpoint = baseURL.value.trim();
+            
+            updateStatus('processing', 'Testing vLLM connection...', 'wifi');
+            responseText.value = "Testing connection to RHAIIS vLLM endpoint...";
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+                console.log('Testing vLLM connection to:', baseURL.value || 'proxy endpoint');
+                
+                // Test the vLLM API endpoint with a simple chat completion request
+                const testPayload = {
+                    model: "HuggingFaceTB/SmolVLM-500M-Instruct",
+                    max_tokens: 20,
+                    messages: [
+                        { role: "user", content: "Hello, can you respond?" }
+                    ]
+                };
+
+                // Build API URL - use relative path if baseURL is empty (for proxy)
+                const apiUrl = baseURL.value.trim() ? `${baseURL.value}/v1/chat/completions` : '/v1/chat/completions';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors',
+                    signal: controller.signal,
+                    body: JSON.stringify(testPayload)
+                });
+
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('ready', 'vLLM connection successful', 'check-circle');
+                    const serverInfo = baseURL.value.trim() || 'proxy endpoint';
+                    responseText.value = `✅ RHAIIS vLLM connection successful!\nEndpoint: ${serverInfo}\nModel: SmolVLM-500M-Instruct\nTest Response: ${data.choices?.[0]?.message?.content || 'API responded correctly'}`;
+                } else {
+                    const errorText = await response.text();
+                    updateStatus('ready', 'Server reachable but API error', 'exclamation-triangle');
+                    const serverInfo = baseURL.value.trim() || 'proxy endpoint';
+                    responseText.value = `⚠️ vLLM server reachable but API returned error: ${response.status}\nEndpoint: ${serverInfo}\nError: ${errorText}`;
+                }
+            } catch (error) {
+                console.error('vLLM connection test error:', error);
+                updateStatus('error', 'vLLM connection failed', 'exclamation-triangle');
+                
+                const serverInfo = baseURL.value.trim() || 'proxy endpoint';
+                if (error.name === 'AbortError') {
+                    responseText.value = `❌ vLLM connection test timed out after 15 seconds.\nEndpoint: ${serverInfo}\n\nPlease check:\n1. Is the RHAIIS vLLM server running?\n2. Is the URL correct?\n3. Are you experiencing network issues?`;
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                    responseText.value = `❌ CORS or connection error.\nEndpoint: ${serverInfo}\n\nFor vLLM servers:\n1. Make sure server started with --host 0.0.0.0\n2. Check if CORS is properly configured\n\nError: ${error.message}`;
+                } else {
+                    responseText.value = `❌ Connection error: ${error.message}\nEndpoint: ${serverInfo}`;
+                }
+            }
+        }
+
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = themeToggle.querySelector('i');
+            icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        // Status indicator management
+        function updateStatus(type, message, icon = 'circle') {
+            statusIndicator.className = `status-indicator status-${type}`;
+            statusIndicator.innerHTML = `<i class="fas fa-${icon}"></i><span>${message}</span>`;
+            
+            if (type === 'processing') {
+                statusIndicator.classList.add('pulse');
+            } else {
+                statusIndicator.classList.remove('pulse');
+            }
+        }
+
+        // Send chat completion request to vLLM API
+        async function sendChatCompletionRequest(instruction, imageBase64URL) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for vision models
+            
+            try {
+                // Build API URL - use relative path if baseURL is empty (for proxy)
+                const apiUrl = baseURL.value.trim() ? `${baseURL.value}/v1/chat/completions` : '/v1/chat/completions';
+                console.log('Sending request to vLLM:', apiUrl);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors',
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        model: "HuggingFaceTB/SmolVLM-500M-Instruct",
+                        max_tokens: 150,
+                        temperature: 0.7,
+                        messages: [
+                            { 
+                                role: 'user', 
+                                content: [
+                                    { type: 'text', text: instruction },
+                                    { 
+                                        type: 'image_url', 
+                                        image_url: {
+                                            url: imageBase64URL,
+                                            detail: "auto"
+                                        } 
+                                    }
+                                ] 
+                            }
+                        ]
+                    })
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error('vLLM server error response:', response.status, errorData);
+                    return `vLLM Server error: ${response.status} - ${errorData}`;
+                }
+                
+                const data = await response.json();
+                console.log('Successful vLLM response received');
+                return data.choices[0].message.content;
+                
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error('vLLM fetch error details:', error);
+                
+                if (error.name === 'AbortError') {
+                    return 'Request timed out after 45 seconds. Please check your RHAIIS vLLM endpoint and network connection.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    return `Failed to connect to vLLM API endpoint. Please check:\n1. Is the RHAIIS vLLM server running?\n2. Is the endpoint URL correct?\n3. Are you experiencing network issues?\n4. Does the server support CORS?\n\nEndpoint: ${baseURL.value}\nError: ${error.message}`;
+                } else {
+                    return `Network error: ${error.message}`;
+                }
+            }
+        }
+
+        // Camera initialization
+        async function initCamera() {
+            try {
+                updateStatus('processing', 'Requesting camera access...', 'camera');
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = stream;
+                
+                // Check if API endpoint is set
+                if (!baseURL.value.trim()) {
+                    updateStatus('ready', 'Camera ready - Using proxy endpoint', 'check-circle');
+                    responseText.value = "Camera access granted. Using proxy endpoint for RHAIIS vLLM API calls. Ready to start processing with SmolVLM-500M-Instruct.";
+                } else {
+                    updateStatus('ready', 'Camera ready - Click start to begin', 'check-circle');
+                    responseText.value = "Camera access granted. RHAIIS vLLM endpoint configured. Ready to start processing with SmolVLM-500M-Instruct.";
+                }
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                updateStatus('error', 'Camera access denied', 'exclamation-triangle');
+                responseText.value = `Error accessing camera: ${err.name} - ${err.message}. Please ensure permissions are granted and you are on HTTPS or localhost.`;
+                
+                // Show user-friendly error message
+                if (err.name === 'NotAllowedError') {
+                    responseText.value = "Camera access was denied. Please allow camera permissions and refresh the page.";
+                } else if (err.name === 'NotFoundError') {
+                    responseText.value = "No camera found. Please connect a camera and refresh the page.";
+                } else {
+                    responseText.value = `Camera error: ${err.message}. Please check your camera and try again.`;
+                }
+            }
+        }
+
+        function captureImage() {
+            if (!stream || !video.videoWidth) {
+                console.warn("Video stream not ready for capture.");
+                return null;
+            }
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+
+        async function sendData() {
+            if (!isProcessing) return;
+
+            const instruction = instructionText.value;
+            const imageBase64URL = captureImage();
+
+            if (!imageBase64URL) {
+                updateStatus('error', 'Failed to capture image', 'exclamation-triangle');
+                responseText.value = "Failed to capture image. Stream might not be active.";
+                return;
+            }
+
+            try {
+                updateStatus('processing', 'Processing with SmolVLM...', 'brain');
+                const response = await sendChatCompletionRequest(instruction, imageBase64URL);
+                responseText.value = response;
+                updateStatus('ready', 'Processing active', 'play-circle');
+            } catch (error) {
+                console.error('Error sending data:', error);
+                updateStatus('error', 'API request failed', 'exclamation-triangle');
+                responseText.value = `Error: ${error.message}`;
+            }
+        }
+
+        function handleStart() {
+            if (!stream) {
+                updateStatus('error', 'Camera not available', 'exclamation-triangle');
+                responseText.value = "Camera not available. Please grant permission first.";
+                return;
+            }
+            
+            const endpoint = baseURL.value.trim();
+            if (!endpoint) {
+                console.log('Using proxy endpoint for RHAIIS vLLM (empty baseURL)');
+            }
+
+            isProcessing = true;
+            
+            // Update button appearance
+            startButton.innerHTML = '<i class="fas fa-stop"></i><span>Stop Processing</span>';
+            startButton.classList.remove('btn-primary');
+            startButton.classList.add('btn-danger');
+
+            // Disable controls
+            instructionText.disabled = true;
+            intervalSelect.disabled = true;
+            baseURL.disabled = true;
+
+            updateStatus('processing', 'Starting SmolVLM processing...', 'play-circle');
+            responseText.value = "Processing started with SmolVLM-500M-Instruct...";
+
+            const intervalMs = parseInt(intervalSelect.value, 10);
+            
+            // Initial immediate call
+            sendData(); 
+            
+            // Then set interval
+            intervalId = setInterval(sendData, intervalMs);
+        }
+
+        function handleStop() {
+            isProcessing = false;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            
+            // Update button appearance
+            startButton.innerHTML = '<i class="fas fa-play"></i><span>Start Processing</span>';
+            startButton.classList.remove('btn-danger');
+            startButton.classList.add('btn-primary');
+
+            // Enable controls
+            instructionText.disabled = false;
+            intervalSelect.disabled = false;
+            baseURL.disabled = false;
+
+            updateStatus('ready', 'Ready to start', 'check-circle');
+            if (responseText.value.startsWith("Processing started")) {
+                responseText.value = "Processing stopped.";
+            }
+        }
+
+        // Event listeners
+        startButton.addEventListener('click', () => {
+            if (isProcessing) {
+                handleStop();
+            } else {
+                handleStart();
+            }
+        });
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Add fade-in animation to cards
+        function addFadeInAnimation() {
+            const cards = document.querySelectorAll('.video-section, .controls-section, .input-card, .header');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('fade-in');
+                }, index * 100);
+            });
+        }
+
+        // Initialize everything when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initCamera();
+            addFadeInAnimation();
+        });
+
+        // Cleanup when page is closed/navigated away
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                if (isProcessing) {
+                    handleStop();
+                } else {
+                    handleStart();
+                }
+            }
+            if (e.key === 'Escape' && isProcessing) {
+                handleStop();
+            }
+        });
+
+    </script>
+</body>
+</html>

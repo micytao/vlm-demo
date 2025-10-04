@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Language Model Demo - RHAIIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Light theme colors */
+            --primary-color: #dc2626;
+            --primary-hover: #b91c1c;
+            --secondary-color: #f3f4f6;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --warning-color: #f59e0b;
+            --guardrail-color: #8b5cf6;
+            --guardrail-hover: #7c3aed;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --border-color: #e5e7eb;
+            --border-focus: #dc2626;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #f87171;
+            --primary-hover: #dc2626;
+            --secondary-color: #374151;
+            --success-color: #34d399;
+            --success-hover: #10b981;
+            --danger-color: #f87171;
+            --danger-hover: #ef4444;
+            --warning-color: #fbbf24;
+            --guardrail-color: #a78bfa;
+            --guardrail-hover: #8b5cf6;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-tertiary: #374151;
+            --border-color: #4b5563;
+            --border-focus: #f87171;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            gap: 2rem;
+            grid-template-areas: 
+                "header header header"
+                "video controls guardrail"
+                "inputs inputs inputs";
+            grid-template-columns: 1fr 400px 350px;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-areas: 
+                    "header header"
+                    "video controls"
+                    "guardrail guardrail"
+                    "inputs inputs";
+                grid-template-columns: 1fr 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-areas: 
+                    "header"
+                    "video"
+                    "controls"
+                    "guardrail"
+                    "inputs";
+                grid-template-columns: 1fr;
+                padding: 1rem;
+                gap: 1.5rem;
+            }
+
+        }
+
+        .header {
+            grid-area: header;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-primary);
+            padding: 1.5rem 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .powered-by-vllm {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-xl);
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .powered-by-vllm:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .vllm-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            transition: all 0.3s ease;
+        }
+
+        .powered-by-vllm:hover .vllm-logo {
+            transform: rotate(5deg) scale(1.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .enterprise-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 1rem;
+        }
+
+        .guardrail-badge {
+            background: linear-gradient(135deg, var(--guardrail-color), var(--guardrail-hover));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 0.5rem;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .video-section {
+            grid-area: video;
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #videoFeed {
+            width: 100%;
+            aspect-ratio: 4/3;
+            border-radius: var(--radius-lg);
+            background: #000;
+            object-fit: cover;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+
+        #videoFeed:hover {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .controls-section {
+            grid-area: controls;
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .guardrail-section {
+            grid-area: guardrail;
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .guardrail-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            appearance: none;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgb(220 38 38 / 0.1);
+            background: var(--bg-primary);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--success-color), var(--success-hover));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--success-hover), var(--success-color));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-hover));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, var(--danger-hover), var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-guardrail {
+            background: linear-gradient(135deg, var(--guardrail-color), var(--guardrail-hover));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-guardrail:hover {
+            background: linear-gradient(135deg, var(--guardrail-hover), var(--guardrail-color));
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .preset-btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .preset-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .inputs-section {
+            grid-area: inputs;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .inputs-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-card {
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgb(220 38 38 / 0.1);
+            background: var(--bg-primary);
+        }
+
+        textarea[readonly] {
+            background: var(--bg-tertiary);
+            cursor: default;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .status-ready {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-processing {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .status-guardrail {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--guardrail-color);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .status-flagged {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        .enterprise-info {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .enterprise-info strong {
+            color: var(--primary-color);
+        }
+
+        .guardrail-info {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .guardrail-info strong {
+            color: var(--guardrail-color);
+        }
+
+        .guardrail-result {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            min-height: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .guardrail-result.flagged {
+            border-color: var(--danger-color);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .guardrail-result.clean {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .highlighted-content {
+            background: rgba(239, 68, 68, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            font-weight: 600;
+        }
+
+        .warning-banner {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+            border: 2px solid var(--danger-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .warning-banner-icon {
+            font-size: 2rem;
+            color: var(--danger-color);
+            animation: pulse 2s infinite;
+        }
+
+        .warning-banner-content h4 {
+            color: var(--danger-color);
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .warning-banner-content p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .response-display {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: inherit;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .response-display.flagged {
+            border-color: var(--danger-color);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--guardrail-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>
+                <i class="fas fa-video"></i>
+                Vision Language Model Demo
+                <span class="enterprise-badge">RHAIIS</span>
+                <span class="guardrail-badge">Guardrails</span>
+            </h1>
+            <div class="powered-by-vllm">
+                <img src="vllm.png" alt="vLLM Logo" class="vllm-logo">
+                <span>Powered by vLLM</span>
+            </div>
+            <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
+
+        <div class="video-section">
+            <video id="videoFeed" autoplay playsinline></video>
+            <canvas id="canvas" class="hidden"></canvas>
+            <div id="statusIndicator" class="status-indicator status-ready">
+                <i class="fas fa-circle"></i>
+                <span>Ready to start</span>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <div class="control-group">
+                <label for="baseURL">
+                    <i class="fas fa-server"></i>
+                    RHAIIS vLLM Endpoint
+                </label>
+                <div class="input-wrapper">
+                    <input type="text" id="baseURL" placeholder="Enter vLLM API endpoint (e.g., http://localhost:8000)">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('http://localhost:8000')">Local vLLM:8000</button>
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('http://rhaiis-service.rhaiis.svc.cluster.local:8000')">Proxy</button>
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('')">Clear</button>
+                </div>
+                <div class="enterprise-info">
+                    <strong>🏢 Enterprise Setup:</strong> Using Red Hat AI Inference Server (RHAIIS) with vLLM backend.<br>
+                    <strong>Model:</strong> Vision Language Model via OpenAI-compatible API<br>
+                    <strong>Default Port:</strong> 8000 (vLLM standard)
+                </div>
+            </div>
+
+            <div class="control-group">
+                <button id="testConnectionBtn" class="btn btn-primary" onclick="testConnection()" style="width: 100%; margin-bottom: 1rem;">
+                    <i class="fas fa-wifi"></i>
+                    <span>Test vLLM Connection</span>
+                </button>
+            </div>
+
+            <div class="control-group">
+                <label for="intervalSelect">
+                    <i class="fas fa-clock"></i>
+                    Request Interval
+                </label>
+                <select id="intervalSelect">
+                    <option value="500">500ms</option>
+                    <option value="1000" selected>1 second</option>
+                    <option value="2000">2 seconds</option>
+                    <option value="5000">5 seconds</option>
+                </select>
+            </div>
+
+            <button id="startButton" class="btn btn-primary">
+                <i class="fas fa-play"></i>
+                <span>Start Processing</span>
+            </button>
+        </div>
+
+        <div class="guardrail-section">
+            <h3>
+                <i class="fas fa-shield-alt"></i>
+                Content Guardrails
+            </h3>
+
+            <div class="control-group">
+                <label style="display: flex; align-items: center; justify-content: space-between;">
+                    <span>
+                        <i class="fas fa-toggle-on"></i>
+                        Enable Guardrails
+                    </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="guardrailEnabled" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label for="guardrailURL">
+                    <i class="fas fa-server"></i>
+                    Guardrail Endpoint
+                </label>
+                <div class="input-wrapper">
+                    <input type="text" id="guardrailURL" placeholder="Enter guardrail API endpoint (e.g., http://localhost:8001)">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                    <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('http://localhost:8001')">Local:8001</button>
+                    <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('http://llama-guard-service.llama-guard.svc.cluster.local:8000')">Proxy</button>
+                    <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('')">Clear</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <button id="testGuardrailBtn" class="btn btn-guardrail" onclick="testGuardrailConnection()" style="width: 100%; margin-bottom: 1rem;">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Test Guardrail</span>
+                </button>
+            </div>
+
+            <div id="guardrailStatus" class="status-indicator status-guardrail">
+                <i class="fas fa-shield-alt"></i>
+                <span>Guardrail Ready</span>
+            </div>
+
+            <div class="guardrail-info">
+                <strong>🛡️ Guardrail Model:</strong> Content safety detection using AI moderation<br>
+                <strong>Detection:</strong> Inappropriate, harmful, or offensive content<br>
+                <strong>Action:</strong> Highlights flagged content in responses
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <i class="fas fa-eye"></i>
+                    Guardrail Result
+                </label>
+                <div id="guardrailResult" class="guardrail-result">
+                    Waiting for content to analyze...
+                </div>
+            </div>
+        </div>
+
+        <div class="inputs-section">
+            <div class="input-card">
+                <h3>
+                    <i class="fas fa-comment-dots"></i>
+                    Instruction
+                </h3>
+                <div class="control-group">
+                    <label for="instructionPreset">
+                        <i class="fas fa-list"></i>
+                        Quick Templates
+                    </label>
+                    <select id="instructionPreset" onchange="applyInstructionTemplate()">
+                        <option value="">-- Select a template --</option>
+                        <option value="general">General Monitoring</option>
+                        <option value="security">Security Monitoring</option>
+                        <option value="people">People Counting</option>
+                        <option value="activity">Activity Detection</option>
+                        <option value="objects">Object Detection</option>
+                        <option value="anomaly">Anomaly Detection</option>
+                        <option value="safety">Safety Compliance</option>
+                        <option value="traffic">Traffic Monitoring</option>
+                        <option value="quality">Quality Inspection</option>
+                        <option value="behavior">Behavior Analysis</option>
+                    </select>
+                </div>
+                <textarea id="instructionText" placeholder="What would you like me to analyze in the video?"></textarea>
+            </div>
+
+            <div class="input-card">
+                <h3>
+                    <i class="fas fa-robot"></i>
+                    VLM Response
+                </h3>
+                <div id="warningBanner" class="warning-banner hidden">
+                    <div class="warning-banner-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="warning-banner-content">
+                        <h4>⚠️ Content Warning Detected</h4>
+                        <p id="warningMessage">Potentially inappropriate content has been flagged by the guardrail system.</p>
+                    </div>
+                </div>
+                <textarea id="responseText" class="response-display" placeholder="VLM responses will appear here...">VLM responses will appear here...</textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('canvas');
+        const baseURL = document.getElementById('baseURL');
+        const guardrailURL = document.getElementById('guardrailURL');
+        const instructionText = document.getElementById('instructionText');
+        const responseText = document.getElementById('responseText');
+        const warningBanner = document.getElementById('warningBanner');
+        const warningMessage = document.getElementById('warningMessage');
+        const intervalSelect = document.getElementById('intervalSelect');
+        const startButton = document.getElementById('startButton');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const guardrailStatus = document.getElementById('guardrailStatus');
+        const guardrailResult = document.getElementById('guardrailResult');
+        const guardrailEnabled = document.getElementById('guardrailEnabled');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Set default values
+        instructionText.value = "Describe what you see in this image. What is happening right now?";
+        
+        // Smart API endpoint detection for RHAIIS/vLLM
+        function getDefaultAPIEndpoint() {
+            // Always default to the Kubernetes service endpoint for rhaiis
+            return "http://rhaiis-service.rhaiis.svc.cluster.local:8000";
+        }
+
+        function getDefaultGuardrailEndpoint() {
+            // Always default to the Kubernetes service endpoint for llama-guard
+            return "http://llama-guard-service.llama-guard.svc.cluster.local:8000";
+        }
+        
+        baseURL.value = getDefaultAPIEndpoint();
+        guardrailURL.value = getDefaultGuardrailEndpoint();
+
+        let stream;
+        let intervalId;
+        let isProcessing = false;
+
+        // Preset endpoint functions
+        function setPresetEndpoint(url) {
+            baseURL.value = url;
+            baseURL.focus();
+            
+            // Update status message based on whether endpoint is set
+            if (stream) {
+                if (url.trim()) {
+                    updateStatus('ready', 'Camera ready - Click start to begin', 'check-circle');
+                    setResponseText("Camera access granted. RHAIIS vLLM endpoint configured. Ready to start processing with VLM.");
+                } else {
+                    updateStatus('ready', 'Camera ready - Using proxy endpoint', 'check-circle');
+                    setResponseText("Camera access granted. Using proxy endpoint for RHAIIS vLLM API calls. Ready to start processing with VLM.");
+                }
+            }
+        }
+
+        function setGuardrailEndpoint(url) {
+            guardrailURL.value = url;
+            guardrailURL.focus();
+        }
+
+        // Instruction templates for live feed monitoring
+        const instructionTemplates = {
+            general: "Describe what you see in this image. What is happening right now?",
+            security: "Monitor this scene for security concerns. Report any suspicious activities, unauthorized access, or unusual behavior. Is everything secure?",
+            people: "Count the number of people visible in this image. Describe their locations and what they are doing.",
+            activity: "Detect and describe any activities or movements happening in this scene. Are people working, standing, sitting, or moving?",
+            objects: "Identify and list all significant objects visible in this image. Focus on equipment, vehicles, packages, or important items.",
+            anomaly: "Look for anything unusual, out of place, or abnormal in this scene. Compare to what would be expected in a normal situation.",
+            safety: "Check for safety compliance issues. Are people wearing required safety equipment (helmets, vests, masks)? Any safety hazards visible?",
+            traffic: "Monitor traffic conditions. Count vehicles, identify congestion, describe traffic flow, and note any incidents or obstructions.",
+            quality: "Inspect this scene for quality issues, defects, or problems. Is everything in proper condition and meeting standards?",
+            behavior: "Analyze the behavior and interactions of people in this scene. Are they following protocols? Any concerning behaviors?"
+        };
+
+        function applyInstructionTemplate() {
+            const preset = document.getElementById('instructionPreset');
+            const selectedTemplate = preset.value;
+            
+            if (selectedTemplate && instructionTemplates[selectedTemplate]) {
+                instructionText.value = instructionTemplates[selectedTemplate];
+                instructionText.focus();
+            }
+        }
+
+        // Helper function to set response text (plain text)
+        function setResponseText(text, flagged = false) {
+            responseText.value = text;
+            responseText.classList.remove('flagged');
+            if (flagged) {
+                responseText.classList.add('flagged');
+            }
+        }
+
+        // Helper function to set response HTML (for highlighted content)
+        // Note: Since responseText is now a textarea (editable), we can't use HTML
+        // So we'll just use plain text with a note about flagged content
+        function setResponseHTML(html, flagged = false) {
+            // Strip HTML tags for textarea
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            const plainText = tempDiv.textContent || tempDiv.innerText || '';
+            
+            responseText.value = plainText;
+            responseText.classList.remove('flagged');
+            if (flagged) {
+                responseText.classList.add('flagged');
+            }
+        }
+
+        // Show warning banner with message
+        function showWarningBanner(message) {
+            warningMessage.textContent = message;
+            warningBanner.classList.remove('hidden');
+        }
+
+        // Hide warning banner
+        function hideWarningBanner() {
+            warningBanner.classList.add('hidden');
+        }
+
+        // Test connection function for vLLM API
+        async function testConnection() {
+            const endpoint = baseURL.value.trim();
+            
+            updateStatus('processing', 'Testing vLLM connection...', 'wifi');
+            setResponseText("Testing connection to RHAIIS vLLM endpoint...");
+            hideWarningBanner();
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+                console.log('Testing vLLM connection to:', baseURL.value || 'proxy endpoint');
+                
+                // Test the vLLM API endpoint with a simple chat completion request
+                const testPayload = {
+                    model: "Qwen/Qwen2.5-VL-3B-Instruct",
+                    max_tokens: 20,
+                    messages: [
+                        { role: "user", content: "Hello, can you respond?" }
+                    ]
+                };
+
+                // Build API URL - use relative path if baseURL is empty (for proxy)
+                const apiUrl = baseURL.value.trim() ? `${baseURL.value}/v1/chat/completions` : '/v1/chat/completions';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors',
+                    signal: controller.signal,
+                    body: JSON.stringify(testPayload)
+                });
+
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('ready', 'vLLM connection successful', 'check-circle');
+                    const serverInfo = baseURL.value.trim() || 'proxy endpoint';
+                    setResponseText(`✅ RHAIIS vLLM connection successful!\nEndpoint: ${serverInfo}\nModel: Vision Language Model (Qwen2.5-VL-3B-Instruct)\nTest Response: ${data.choices?.[0]?.message?.content || 'API responded correctly'}`);
+                } else {
+                    const errorText = await response.text();
+                    updateStatus('ready', 'Server reachable but API error', 'exclamation-triangle');
+                    const serverInfo = baseURL.value.trim() || 'proxy endpoint';
+                    setResponseText(`⚠️ vLLM server reachable but API returned error: ${response.status}\nEndpoint: ${serverInfo}\nError: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('vLLM connection test error:', error);
+                updateStatus('error', 'vLLM connection failed', 'exclamation-triangle');
+                
+                const serverInfo = baseURL.value.trim() || 'proxy endpoint';
+                if (error.name === 'AbortError') {
+                    setResponseText(`❌ vLLM connection test timed out after 15 seconds.\nEndpoint: ${serverInfo}\n\nPlease check:\n1. Is the RHAIIS vLLM server running?\n2. Is the URL correct?\n3. Are you experiencing network issues?`);
+                } else if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                    setResponseText(`❌ CORS or connection error.\nEndpoint: ${serverInfo}\n\nFor vLLM servers:\n1. Make sure server started with --host 0.0.0.0\n2. Check if CORS is properly configured\n\nError: ${error.message}`);
+                } else {
+                    setResponseText(`❌ Connection error: ${error.message}\nEndpoint: ${serverInfo}`);
+                }
+            }
+        }
+
+        // Test guardrail connection
+        async function testGuardrailConnection() {
+            const endpoint = guardrailURL.value.trim();
+            
+            updateGuardrailStatus('processing', 'Testing guardrail connection...', 'shield-alt');
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                console.log('Testing guardrail connection to:', guardrailURL.value || 'proxy endpoint');
+                
+                // Test with a simple text
+                const testText = "This is a test message for content moderation.";
+                const result = await checkContentWithGuardrail(testText);
+                
+                clearTimeout(timeoutId);
+                
+                if (result.success) {
+                    updateGuardrailStatus('ready', 'Guardrail connection successful', 'check-circle');
+                    guardrailResult.textContent = `✅ Guardrail test successful!\nTest content: "${testText}"\nResult: ${result.is_safe ? 'SAFE' : 'FLAGGED'}\nConfidence: ${result.confidence || 'N/A'}`;
+                    guardrailResult.className = `guardrail-result ${result.is_safe ? 'clean' : 'flagged'}`;
+                } else {
+                    updateGuardrailStatus('error', 'Guardrail connection failed', 'exclamation-triangle');
+                    guardrailResult.textContent = `❌ Guardrail test failed: ${result.error}`;
+                    guardrailResult.className = 'guardrail-result';
+                }
+            } catch (error) {
+                console.error('Guardrail connection test error:', error);
+                updateGuardrailStatus('error', 'Guardrail connection failed', 'exclamation-triangle');
+                guardrailResult.textContent = `❌ Guardrail connection error: ${error.message}`;
+                guardrailResult.className = 'guardrail-result';
+            }
+        }
+
+        // Check content with guardrail model
+        async function checkContentWithGuardrail(text) {
+            if (!guardrailEnabled.checked) {
+                return { success: true, is_safe: true, confidence: 1.0, flagged_content: [] };
+            }
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                // Build guardrail API URL
+                const apiUrl = guardrailURL.value.trim() ? 
+                    `${guardrailURL.value}/v1/chat/completions` : 
+                    '/guardrail/v1/chat/completions';
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors',
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        model: "content-moderation",
+                        max_tokens: 100,
+                        messages: [
+                            { 
+                                role: "system", 
+                                content: "You are a content moderation system. Analyze the following text and respond with 'SAFE' if the content is appropriate, or 'FLAGGED: [reason]' if it contains inappropriate, harmful, offensive, or unsafe content. Be specific about what was flagged." 
+                            },
+                            { 
+                                role: "user", 
+                                content: `Please analyze this content: "${text}"` 
+                            }
+                        ]
+                    })
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`Guardrail API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const result = data.choices[0].message.content.trim();
+                
+                const is_safe = result.toUpperCase().startsWith('SAFE');
+                const flagged_content = is_safe ? [] : [result.replace(/^FLAGGED:\s*/i, '')];
+                
+                return {
+                    success: true,
+                    is_safe: is_safe,
+                    confidence: is_safe ? 0.95 : 0.85,
+                    flagged_content: flagged_content,
+                    raw_result: result
+                };
+
+            } catch (error) {
+                console.error('Guardrail check error:', error);
+                
+                // Fallback: simple keyword-based detection
+                const inappropriateKeywords = [
+                    'hate', 'violence', 'harmful', 'offensive', 'inappropriate', 
+                    'dangerous', 'illegal', 'explicit', 'abusive', 'threatening'
+                ];
+                
+                const lowerText = text.toLowerCase();
+                const flaggedKeywords = inappropriateKeywords.filter(keyword => 
+                    lowerText.includes(keyword)
+                );
+                
+                if (flaggedKeywords.length > 0) {
+                    return {
+                        success: true,
+                        is_safe: false,
+                        confidence: 0.7,
+                        flagged_content: flaggedKeywords,
+                        fallback: true
+                    };
+                }
+                
+                return {
+                    success: false,
+                    error: error.message,
+                    is_safe: true // Default to safe if guardrail fails
+                };
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Highlight flagged content in text
+        function highlightFlaggedContent(text, flaggedContent) {
+            if (!flaggedContent || flaggedContent.length === 0) {
+                return escapeHtml(text);
+            }
+
+            // First escape HTML to prevent XSS
+            let highlightedText = escapeHtml(text);
+            
+            // Then add highlighting spans
+            flaggedContent.forEach(flagged => {
+                const escapedFlagged = escapeHtml(flagged);
+                const regex = new RegExp(`\\b${escapedFlagged.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+                highlightedText = highlightedText.replace(regex, `<span class="highlighted-content">$&</span>`);
+            });
+            
+            return highlightedText;
+        }
+
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = themeToggle.querySelector('i');
+            icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        // Status indicator management
+        function updateStatus(type, message, icon = 'circle') {
+            statusIndicator.className = `status-indicator status-${type}`;
+            statusIndicator.innerHTML = `<i class="fas fa-${icon}"></i><span>${message}</span>`;
+            
+            if (type === 'processing') {
+                statusIndicator.classList.add('pulse');
+            } else {
+                statusIndicator.classList.remove('pulse');
+            }
+        }
+
+        function updateGuardrailStatus(type, message, icon = 'shield-alt') {
+            guardrailStatus.className = `status-indicator status-${type}`;
+            guardrailStatus.innerHTML = `<i class="fas fa-${icon}"></i><span>${message}</span>`;
+            
+            if (type === 'processing') {
+                guardrailStatus.classList.add('pulse');
+            } else {
+                guardrailStatus.classList.remove('pulse');
+            }
+        }
+
+        // Send chat completion request to vLLM API
+        async function sendChatCompletionRequest(instruction, imageBase64URL) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout for vision models
+            
+            try {
+                // Build API URL - use relative path if baseURL is empty (for proxy)
+                const apiUrl = baseURL.value.trim() ? `${baseURL.value}/v1/chat/completions` : '/v1/chat/completions';
+                
+                const payload = {
+                    model: "Qwen/Qwen2.5-VL-3B-Instruct",
+                    max_tokens: 150,
+                    temperature: 0.7,
+                    messages: [
+                        { 
+                            role: 'user', 
+                            content: [
+                                { type: 'text', text: instruction },
+                                { 
+                                    type: 'image_url', 
+                                    image_url: {
+                                        url: imageBase64URL,
+                                        detail: "auto"
+                                    } 
+                                }
+                            ] 
+                        }
+                    ]
+                };
+                
+                console.log('📤 Sending to VLM:', apiUrl);
+                console.log('   - Model:', payload.model);
+                console.log('   - Instruction:', instruction.substring(0, 50) + '...');
+                console.log('   - Image size:', imageBase64URL.length, 'bytes');
+                console.log('   - Message format: text + image_url (base64)');
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors',
+                    signal: controller.signal,
+                    body: JSON.stringify(payload)
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error('❌ vLLM server error response:', response.status, errorData);
+                    return `vLLM Server error: ${response.status} - ${errorData}`;
+                }
+                
+                const data = await response.json();
+                const vlmResponse = data.choices[0].message.content;
+                console.log('✅ VLM Response received successfully');
+                console.log('   - Response length:', vlmResponse.length, 'characters');
+                console.log('   - Response preview:', vlmResponse.substring(0, 100) + '...');
+                return vlmResponse;
+                
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error('vLLM fetch error details:', error);
+                
+                if (error.name === 'AbortError') {
+                    return 'Request timed out after 45 seconds. Please check your RHAIIS vLLM endpoint and network connection.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    return `Failed to connect to vLLM API endpoint. Please check:\n1. Is the RHAIIS vLLM server running?\n2. Is the endpoint URL correct?\n3. Are you experiencing network issues?\n4. Does the server support CORS?\n\nEndpoint: ${baseURL.value}\nError: ${error.message}`;
+                } else {
+                    return `Network error: ${error.message}`;
+                }
+            }
+        }
+
+        // Camera initialization
+        async function initCamera() {
+            try {
+                updateStatus('processing', 'Requesting camera access...', 'camera');
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = stream;
+                
+                // Check if API endpoint is set
+                if (!baseURL.value.trim()) {
+                    updateStatus('ready', 'Camera ready - Using proxy endpoint', 'check-circle');
+                    setResponseText("Camera access granted. Using proxy endpoint for RHAIIS vLLM API calls. Ready to start processing with VLM.");
+                } else {
+                    updateStatus('ready', 'Camera ready - Click start to begin', 'check-circle');
+                    setResponseText("Camera access granted. RHAIIS vLLM endpoint configured. Ready to start processing with VLM.");
+                }
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                updateStatus('error', 'Camera access denied', 'exclamation-triangle');
+                
+                // Show user-friendly error message
+                if (err.name === 'NotAllowedError') {
+                    setResponseText("Camera access was denied. Please allow camera permissions and refresh the page.");
+                } else if (err.name === 'NotFoundError') {
+                    setResponseText("No camera found. Please connect a camera and refresh the page.");
+                } else {
+                    setResponseText(`Camera error: ${err.message}. Please check your camera and try again.`);
+                }
+            }
+        }
+
+        function captureImage() {
+            if (!stream || !video.videoWidth) {
+                console.warn("Video stream not ready for capture.");
+                return null;
+            }
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', 0.8);
+        }
+
+        async function sendData() {
+            if (!isProcessing) return;
+
+            const instruction = instructionText.value;
+            const imageBase64URL = captureImage();
+
+            if (!imageBase64URL) {
+                updateStatus('error', 'Failed to capture image', 'exclamation-triangle');
+                setResponseText("Failed to capture image. Stream might not be active.");
+                hideWarningBanner();
+                return;
+            }
+
+            try {
+                const imageSize = imageBase64URL.length;
+                console.log(`📸 Captured image from live feed (${imageSize} bytes)`);
+                console.log(`📝 Instruction: ${instruction}`);
+                console.log(`🚀 Sending to VLM endpoint: ${baseURL.value || 'proxy endpoint'}`);
+                
+                updateStatus('processing', 'Processing with VLM...', 'brain');
+                const response = await sendChatCompletionRequest(instruction, imageBase64URL);
+                
+                // Check content with guardrail if enabled
+                if (guardrailEnabled.checked) {
+                    updateGuardrailStatus('processing', 'Checking content safety...', 'shield-alt');
+                    
+                    const guardrailCheck = await checkContentWithGuardrail(response);
+                    
+                    if (guardrailCheck.success) {
+                        if (guardrailCheck.is_safe) {
+                            // Content is safe
+                            updateGuardrailStatus('ready', 'Content approved', 'check-circle');
+                            guardrailResult.textContent = `✅ Content is safe\nConfidence: ${(guardrailCheck.confidence * 100).toFixed(1)}%`;
+                            guardrailResult.className = 'guardrail-result clean';
+                            setResponseText(response, false);
+                            hideWarningBanner();
+                            
+                            console.log('✅ Guardrail check: Content SAFE');
+                        } else {
+                            // Content flagged - show warnings
+                            updateGuardrailStatus('flagged', 'Content flagged', 'exclamation-triangle');
+                            
+                            const issuesText = guardrailCheck.flagged_content.join(', ');
+                            const confidenceText = `${(guardrailCheck.confidence * 100).toFixed(1)}%`;
+                            const fallbackNote = guardrailCheck.fallback ? '\n(Fallback detection used)' : '';
+                            
+                            guardrailResult.innerHTML = `⚠️ <strong>Content flagged!</strong><br>Issues detected: ${issuesText}<br>Confidence: ${confidenceText}${fallbackNote}`;
+                            guardrailResult.className = 'guardrail-result flagged';
+                            
+                            // Show prominent warning banner
+                            showWarningBanner(`Inappropriate content detected: ${issuesText}`);
+                            
+                            // Highlight flagged content in the response
+                            const highlightedResponse = highlightFlaggedContent(response, guardrailCheck.flagged_content);
+                            setResponseHTML(highlightedResponse, true);
+                            
+                            console.warn('⚠️ Guardrail check: Content FLAGGED', guardrailCheck.flagged_content);
+                            
+                            // Optional: Play alert sound (if desired)
+                            // new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVq/q8a5dGAg+ltv11YE2BzqM0fPOdzMGKX3G8N2UPgwUYr3r7qdWFApEn+PzwWshBzmK0/PWfzYHOYzT89aCNgc6kdPy2YE3BzmN1PPVgTYHOpHT8tiCNgc5jdTz1oE2BzqR0vLYgjYHOY3U89aBNgc6kdPy2IQ2BzmN1PLYgjYHOpHT8tiCNgc5jdTz1oE2BzqR0/LYgTYHOY3U89WCNgc6kdPy2IM2BzmN1PLYgjUHOpHT8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYHOY3U89WCNgc6kdPy2IQ2BzmN1PLYgjUHOpHU8teCNgc5jdPy14I2BzqR1PLYgjYH').play().catch(() => {});
+                        }
+                    } else {
+                        // Guardrail check failed
+                        updateGuardrailStatus('error', 'Guardrail check failed', 'exclamation-triangle');
+                        guardrailResult.textContent = `❌ Guardrail check failed: ${guardrailCheck.error}\nDisplaying content without filtering.`;
+                        guardrailResult.className = 'guardrail-result';
+                        setResponseText(response, false);
+                        hideWarningBanner();
+                        
+                        console.error('❌ Guardrail check failed:', guardrailCheck.error);
+                    }
+                } else {
+                    // Guardrails disabled
+                    updateGuardrailStatus('ready', 'Guardrails disabled', 'shield-alt');
+                    guardrailResult.textContent = "Guardrails are disabled. Content not being filtered.";
+                    guardrailResult.className = 'guardrail-result';
+                    setResponseText(response, false);
+                    hideWarningBanner();
+                }
+                
+                updateStatus('ready', 'Processing active', 'play-circle');
+            } catch (error) {
+                console.error('Error sending data:', error);
+                updateStatus('error', 'API request failed', 'exclamation-triangle');
+                setResponseText(`Error: ${error.message}`);
+                hideWarningBanner();
+            }
+        }
+
+        function handleStart() {
+            if (!stream) {
+                updateStatus('error', 'Camera not available', 'exclamation-triangle');
+                setResponseText("Camera not available. Please grant permission first.");
+                return;
+            }
+            
+            const endpoint = baseURL.value.trim();
+            if (!endpoint) {
+                console.log('Using proxy endpoint for RHAIIS vLLM (empty baseURL)');
+            }
+
+            isProcessing = true;
+            
+            // Update button appearance
+            startButton.innerHTML = '<i class="fas fa-stop"></i><span>Stop Processing</span>';
+            startButton.classList.remove('btn-primary');
+            startButton.classList.add('btn-danger');
+
+            // Disable controls
+            instructionText.disabled = true;
+            intervalSelect.disabled = true;
+            baseURL.disabled = true;
+            guardrailURL.disabled = true;
+
+            updateStatus('processing', 'Starting VLM processing...', 'play-circle');
+            setResponseText("Processing started with Vision Language Model...");
+            hideWarningBanner();
+
+            const intervalMs = parseInt(intervalSelect.value, 10);
+            
+            // Initial immediate call
+            sendData(); 
+            
+            // Then set interval
+            intervalId = setInterval(sendData, intervalMs);
+        }
+
+        function handleStop() {
+            isProcessing = false;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            
+            // Update button appearance
+            startButton.innerHTML = '<i class="fas fa-play"></i><span>Start Processing</span>';
+            startButton.classList.remove('btn-danger');
+            startButton.classList.add('btn-primary');
+
+            // Enable controls
+            instructionText.disabled = false;
+            intervalSelect.disabled = false;
+            baseURL.disabled = false;
+            guardrailURL.disabled = false;
+
+            updateStatus('ready', 'Ready to start', 'check-circle');
+            const currentText = responseText.textContent;
+            if (currentText && currentText.startsWith("Processing started")) {
+                setResponseText("Processing stopped.");
+            }
+        }
+
+        // Event listeners
+        startButton.addEventListener('click', () => {
+            if (isProcessing) {
+                handleStop();
+            } else {
+                handleStart();
+            }
+        });
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Add fade-in animation to cards
+        function addFadeInAnimation() {
+            const cards = document.querySelectorAll('.video-section, .controls-section, .guardrail-section, .input-card, .header');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('fade-in');
+                }, index * 100);
+            });
+        }
+
+        // Initialize everything when the page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initCamera();
+            addFadeInAnimation();
+        });
+
+        // Cleanup when page is closed/navigated away
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                if (isProcessing) {
+                    handleStop();
+                } else {
+                    handleStart();
+                }
+            }
+            if (e.key === 'Escape' && isProcessing) {
+                handleStop();
+            }
+        });
+
+    </script>
+</body>
+</html>
