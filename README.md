@@ -1,6 +1,6 @@
-# SmolVLM Real-time Camera Demo
+# Vision Language Model Real-time Camera Demo
 
-![demo](./demo.png)
+![demo](./assets/demo.png)
 
 This repository is a modern demo for how to use leading AI inference engine (llama.cpp and vLLM) with SmolVLM 500M to get real-time object detection from your camera feed. The demo provides a beautiful, responsive web interface that captures camera frames and sends them to the SmolVLM model for analysis.
 
