@@ -965,38 +965,16 @@
         .violation-table tbody tr {
             border-bottom: 1px solid var(--border-color);
             transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .violation-table tbody tr::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: var(--primary-color);
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .violation-table tbody tr:hover:not(.empty-state) {
             background: var(--bg-secondary);
-            transform: translateX(4px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .violation-table tbody tr:hover::before {
-            opacity: 1;
         }
 
         .violation-table tbody tr.flagged-row {
             background: rgba(239, 68, 68, 0.05);
-            border-left: 3px solid var(--danger-color);
-        }
-
-        .violation-table tbody tr.flagged-row::before {
-            background: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
         }
 
         .violation-table tbody tr.flagged-row:hover {
@@ -1006,11 +984,7 @@
 
         .violation-table tbody tr.error-row {
             background: rgba(251, 146, 60, 0.05);
-            border-left: 3px solid #f97316;
-        }
-
-        .violation-table tbody tr.error-row::before {
-            background: #f97316;
+            border-left: 4px solid #f97316;
         }
 
         .violation-table tbody tr.error-row:hover {
@@ -1024,6 +998,11 @@
             word-wrap: break-word;
             overflow-wrap: break-word;
             vertical-align: top;
+        }
+        
+        .violation-table tbody tr.flagged-row td:first-child,
+        .violation-table tbody tr.error-row td:first-child {
+            padding-left: calc(1rem - 4px);
         }
 
         .violation-table .empty-state td {
