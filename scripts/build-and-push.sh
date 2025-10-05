@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# SmolVLM Demo - Container Build and Push Script
-# This script builds both containers (llama.cpp CUDA server + Nginx web server) and pushes them to a container registry
+# VLM Demo - Container Build and Push Script
+# This script builds the web container and pushes it to a container registry
 
 set -e
 
 # Configuration
 REGISTRY="quay.io/rh_ee_micyang"
-MODEL_IMAGE="smolvlm-model"
-WEB_IMAGE="smolvlm-web"
+MODEL_IMAGE="vlm-demo-model"
+WEB_IMAGE="vlm-demo-web"
 TAG="0.1"
 
 # Build configuration
@@ -22,7 +22,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 SmolVLM Demo - Container Build Script${NC}"
+echo -e "${BLUE}🚀 VLM Demo - Container Build Script${NC}"
 echo "================================================"
 
 # Check if podman or docker is available
@@ -118,11 +118,11 @@ echo "2. Deploy to OpenShift:"
 echo "   oc apply -f openshift-deployment.yaml"
 echo ""
 echo "3. Check deployment status:"
-echo "   oc get pods -n smolvlm-demo"
-echo "   oc get routes -n smolvlm-demo"
+echo "   oc get pods -n vlm-demo"
+echo "   oc get routes -n vlm-demo"
 echo ""
 echo "4. Access the application:"
-echo "   oc get route smolvlm-demo-route -n smolvlm-demo -o jsonpath='{.spec.host}'"
+echo "   oc get route vlm-demo-route -n vlm-demo -o jsonpath='{.spec.host}'"
 echo ""
 echo -e "${YELLOW}📝 Images built:${NC}"
 echo "   ${REGISTRY}/${MODEL_IMAGE}:${TAG}"

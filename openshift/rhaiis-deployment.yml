@@ -1,3 +1,11 @@
+# Prerequisites:
+# 1. Create docker-secret for pulling images from registry.redhat.io:
+#    oc create secret generic docker-secret --from-file=.dockercfg=$HOME/.config/containers/auth.json --type=kubernetes.io/dockercfg -n rhaiis
+#
+# 2. Update the HF_TOKEN in the Secret below with your Hugging Face token
+#
+# 3. Ensure GPU time-slicing is configured (see gpu-time-slicing-config.yaml)
+
 ---
 apiVersion: v1
 kind: Namespace
@@ -26,7 +34,7 @@ metadata:
   namespace: rhaiis
 type: Opaque
 stringData:
-  HF_TOKEN: "YOUR_HUGGINGFACE_TOKEN_HERE"
+  HF_TOKEN: "YOUR_HUGGINGFACE_TOKEN_HERE"  # Replace with your actual HF token
 
 ---
 apiVersion: apps/v1
@@ -79,6 +87,7 @@ spec:
             - '--port=8000'
             - '--model=Qwen/Qwen2-VL-2B-Instruct'
             - '--tensor-parallel-size=1'
+            - '--gpu-memory-utilization=0.4'
           ports:
             - containerPort: 8000
               protocol: TCP

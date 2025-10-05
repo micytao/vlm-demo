@@ -37,6 +37,21 @@ watch oc get pods -n nvidia-gpu-operator
 
 ### Step 3: Deploy VLM Workloads
 
+**Option A: Automated Deployment (Recommended)**
+
+```bash
+# Deploy web application with automated checks
+./scripts/deploy-to-openshift.sh
+
+# The script will:
+# ✓ Verify both vLLM and Llama Guard services are running
+# ✓ Deploy the web application
+# ✓ Create routes and services
+# ✓ Provide the application URL
+```
+
+**Option B: Manual Deployment**
+
 ```bash
 # Deploy Qwen2-VL (main vision-language model)
 oc apply -f openshift/rhaiis-deployment.yml
@@ -53,7 +68,7 @@ oc get routes -n rhaiis
 oc get routes -n llama-guard
 ```
 
-**🎉 Done!** Both models are now running and sharing the same GPU.
+**🎉 Done!** Both models and the web application are now running and sharing the same GPU.
 
 ---
 
@@ -68,9 +83,12 @@ If GPU Operator is already installed:
 # Verify
 ./verify-gpu.sh
 
-# Deploy workloads
+# Deploy workloads (backend services first)
 oc apply -f openshift/rhaiis-deployment.yml
 oc apply -f openshift/llama-guard-deployment.yml
+
+# Deploy web application
+./scripts/deploy-to-openshift.sh
 ```
 
 ---
@@ -175,6 +193,7 @@ oc delete pod -n nvidia-gpu-operator -l app=nvidia-device-plugin-daemonset
 | Verify GPU config | `./verify-gpu.sh` |
 | Deploy Qwen2-VL | `oc apply -f openshift/rhaiis-deployment.yml` |
 | Deploy Llama-Guard | `oc apply -f openshift/llama-guard-deployment.yml` |
+| Deploy Web App (Automated) | `./scripts/deploy-to-openshift.sh` |
 | Check GPU status | `./scripts/check-current-gpu-status.sh` |
 | View logs | `oc logs -f deployment/<name> -n <namespace>` |
 

@@ -113,6 +113,23 @@ For detailed step-by-step instructions, see the [QUICKSTART.md](QUICKSTART.md) g
    ```
 
 4. **Deploy the Web Frontend**
+   
+   **Option A: Automated Deployment (Recommended)**
+   ```bash
+   # Build and push the web container
+   ./scripts/build-and-push-prod.sh
+   
+   # Deploy web application with automated checks
+   ./scripts/deploy-to-openshift.sh
+   
+   # The script will:
+   # ✓ Verify vLLM and Llama Guard services are running
+   # ✓ Deploy the web application
+   # ✓ Create routes and services
+   # ✓ Provide the application URL
+   ```
+   
+   **Option B: Manual Deployment**
    ```bash
    # Build and push the web container
    ./scripts/build-and-push.sh
@@ -134,6 +151,38 @@ For detailed step-by-step instructions, see the [QUICKSTART.md](QUICKSTART.md) g
 - **🔐 Security**: Non-root containers, network policies, and security contexts
 - **🌐 OpenAI-Compatible API**: vLLM provides OpenAI-compatible endpoints
 
+#### Automated Deployment Script
+
+The `deploy-to-openshift.sh` script provides a streamlined deployment experience:
+
+**Features:**
+- ✅ Validates prerequisites (oc, kubectl)
+- ✅ Verifies vLLM and Llama Guard services are running
+- ✅ Deploys web application with proper configuration
+- ✅ Creates routes and services automatically
+- ✅ Provides deployment status and URLs
+
+**Configuration Options:**
+```bash
+# Deploy with defaults
+./scripts/deploy-to-openshift.sh
+
+# Custom configuration
+NAMESPACE=my-vlm-demo \
+VLLM_NAMESPACE=rhaiis \
+LLAMA_GUARD_NAMESPACE=llama-guard \
+CONTAINER_IMAGE=quay.io/rh_ee_micyang/vlm-demo-web-prod:0.2 \
+./scripts/deploy-to-openshift.sh
+```
+
+**Environment Variables:**
+- `NAMESPACE`: Web app namespace (default: `vlm-demo`)
+- `VLLM_NAMESPACE`: Vision model namespace (default: `rhaiis`)
+- `VLLM_SERVICE`: Vision model service (default: `rhaiis-service`)
+- `LLAMA_GUARD_NAMESPACE`: Guardrail namespace (default: `llama-guard`)
+- `LLAMA_GUARD_SERVICE`: Guardrail service (default: `llama-guard-service`)
+- `CONTAINER_IMAGE`: Container image URL (default: `quay.io/rh_ee_micyang/vlm-demo-web-prod:0.1`)
+
 #### Monitoring and Troubleshooting
 
 ```bash
@@ -142,6 +191,9 @@ oc logs -f deployment/rhaiis -n rhaiis
 
 # Check guardrail model logs
 oc logs -f deployment/llama-guard -n llama-guard
+
+# Check web application logs
+oc logs -f deployment/vlm-demo-app -n vlm-demo
 
 # Check GPU utilization
 ./scripts/check-current-gpu-status.sh

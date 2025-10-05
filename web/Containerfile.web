@@ -11,7 +11,10 @@ RUN mkdir -p /app/web /tmp/nginx /tmp/nginx/client_temp /tmp/nginx/proxy_temp \
     && chown -R 101:101 /app/web /tmp/nginx
 
 # Copy the web application
-COPY index.html /app/web/
+COPY web/prod-guardrail-index.html /app/web/index.html
+
+# Copy assets maintaining directory structure
+COPY assets/ /app/assets/
 
 # Create custom nginx.conf for non-root execution
 RUN cat > /etc/nginx/nginx.conf << 'EOF'
@@ -64,6 +67,12 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
 
+    # Serve assets from /app/assets
+    location /assets/ {
+        alias /app/assets/;
+        add_header Cache-Control "public, max-age=3600";
+    }
+
     # Serve static files
     location / {
         try_files $uri $uri/ =404;
@@ -72,11 +81,41 @@ server {
         add_header Expires "0";
     }
 
-    # Proxy API requests to model service
+    # Proxy API requests to model service (vLLM)
     location /v1/ {
         # Use OpenShift service name for internal communication
-        proxy_pass http://smolvlm-model-service:8080;
-        #proxy_pass http://localhost:8080;
+        proxy_pass http://rhaiis-service.rhaiis.svc.cluster.local:8000;
+        #proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+        
+        # CORS headers
+        add_header Access-Control-Allow-Origin * always;
+        add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization" always;
+        
+        # Handle preflight requests
+        if ($request_method = 'OPTIONS') {
+            add_header Access-Control-Allow-Origin * always;
+            add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization" always;
+            add_header Access-Control-Max-Age 1728000 always;
+            add_header Content-Type 'text/plain; charset=utf-8' always;
+            add_header Content-Length 0 always;
+            return 204;
+        }
+    }
+
+    # Proxy guardrail requests to Llama Guard service
+    location /guardrail/ {
+        # Strip /guardrail prefix and proxy to the guardrail service
+        rewrite ^/guardrail/(.*) /$1 break;
+        proxy_pass http://llama-guard-service.llama-guard.svc.cluster.local:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

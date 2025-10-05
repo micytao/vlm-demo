@@ -740,6 +740,378 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
+        /* Violation History Section */
+        .history-section {
+            background: var(--bg-primary);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: var(--radius-xl);
+            margin-top: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            grid-column: 1 / -1;  /* Span all columns in the inputs grid */
+        }
+
+        .history-section:hover {
+            box-shadow: 0 -8px 30px rgba(220, 38, 38, 0.15);
+            border-top-color: var(--primary-hover);
+        }
+
+        .history-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                var(--primary-color) 0%, 
+                var(--success-color) 50%, 
+                var(--primary-color) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .history-section:hover::before {
+            opacity: 1;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .history-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--guardrail-color), var(--success-color));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: gradient-shift 3s ease infinite;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .history-header h3 i {
+            -webkit-text-fill-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-clear-history {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear-history:hover {
+            background: var(--danger-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.2);
+        }
+
+        .stat-card.flagged {
+            border-color: var(--danger-color);
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% {
+                border-color: var(--danger-color);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                border-color: var(--danger-hover);
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .stat-card.flagged:hover {
+            animation: none;
+            border-color: var(--danger-hover);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .stat-card > i {
+            font-size: 2rem;
+            color: var(--success-color);
+        }
+
+        .stat-card.flagged > i {
+            color: var(--danger-color);
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .violation-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .violation-table thead {
+            background: var(--bg-secondary);
+        }
+
+        .violation-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.75rem;
+        }
+
+        .violation-table tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .violation-table tbody tr::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary-color);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .violation-table tbody tr:hover:not(.empty-state) {
+            background: var(--bg-secondary);
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .violation-table tbody tr:hover::before {
+            opacity: 1;
+        }
+
+        .violation-table tbody tr.flagged-row {
+            background: rgba(239, 68, 68, 0.05);
+            border-left: 3px solid var(--danger-color);
+        }
+
+        .violation-table tbody tr.flagged-row::before {
+            background: var(--danger-color);
+        }
+
+        .violation-table tbody tr.flagged-row:hover {
+            background: rgba(239, 68, 68, 0.12);
+            box-shadow: 0 2px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .violation-table td {
+            padding: 1rem;
+            color: var(--text-primary);
+        }
+
+        .violation-table .empty-state td {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge.safe {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.flagged {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .content-preview {
+            max-width: 400px;
+            word-wrap: break-word;
+            white-space: normal;
+            line-height: 1.4;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 0.25rem;
+        }
+
+        .confidence-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .confidence-value {
+            font-weight: 600;
+            min-width: 40px;
+        }
+
+        .confidence-progress {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+            max-width: 100px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        .confidence-fill.low {
+            background: var(--danger-color);
+        }
+
+        .confidence-fill.medium {
+            background: var(--warning-color);
+        }
+
+        /* Mobile responsiveness for history section */
+        @media (max-width: 768px) {
+            .history-section {
+                padding: 1.5rem 1rem;
+            }
+
+            .history-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .history-header h3 {
+                font-size: 1.25rem;
+            }
+
+            .btn-clear-history {
+                width: 100%;
+            }
+
+            .history-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .violation-table {
+                font-size: 0.75rem;
+            }
+
+            .violation-table th,
+            .violation-table td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .content-preview {
+                max-width: 200px;
+                max-height: 80px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -752,7 +1124,7 @@
                 <span class="guardrail-badge">Guardrails</span>
             </h1>
             <div class="powered-by-vllm">
-                <img src="vllm.png" alt="vLLM Logo" class="vllm-logo">
+                <img src="/assets/vllm.png" alt="vLLM Logo" class="vllm-logo">
                 <span>Powered by vLLM</span>
             </div>
             <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
@@ -776,17 +1148,19 @@
                     RHAIIS vLLM Endpoint
                 </label>
                 <div class="input-wrapper">
-                    <input type="text" id="baseURL" placeholder="Enter vLLM API endpoint (e.g., http://localhost:8000)">
+                    <input type="text" id="baseURL" placeholder="Leave empty for internal proxy, or enter custom endpoint">
                 </div>
                 <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('')">Internal Proxy (Default)</button>
                     <button type="button" class="preset-btn" onclick="setPresetEndpoint('http://localhost:8000')">Local vLLM:8000</button>
-                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('http://rhaiis-service.rhaiis.svc.cluster.local:8000')">Proxy</button>
-                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('')">Clear</button>
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('https://rhaiis-route-rhaiis.apps.sno.sandbox73.opentlc.com')">External Route</button>
+                    <button type="button" class="preset-btn" onclick="setPresetEndpoint('http://rhaiis-service.rhaiis.svc.cluster.local:8000')">Direct Service</button>
                 </div>
                 <div class="enterprise-info">
                     <strong>🏢 Enterprise Setup:</strong> Using Red Hat AI Inference Server (RHAIIS) with vLLM backend.<br>
-                    <strong>Model:</strong> Vision Language Model via OpenAI-compatible API<br>
-                    <strong>Default Port:</strong> 8000 (vLLM standard)
+                    <strong>Default:</strong> Uses internal proxy to rhaiis-service<br>
+                    <strong>Model:</strong> Qwen2-VL-2B-Instruct (Vision Language Model)<br>
+                    <strong>API:</strong> OpenAI-compatible (Port 8000)
                 </div>
             </div>
 
@@ -803,10 +1177,9 @@
                     Request Interval
                 </label>
                 <select id="intervalSelect">
-                    <option value="500">500ms</option>
-                    <option value="1000" selected>1 second</option>
-                    <option value="2000">2 seconds</option>
-                    <option value="5000">5 seconds</option>
+                    <option value="5000" selected>5 seconds</option>
+                    <option value="10000">10 seconds</option>
+                    <option value="30000">30 seconds</option>
                 </select>
             </div>
 
@@ -841,12 +1214,13 @@
                     Guardrail Endpoint
                 </label>
                 <div class="input-wrapper">
-                    <input type="text" id="guardrailURL" placeholder="Enter guardrail API endpoint (e.g., http://localhost:8001)">
+                    <input type="text" id="guardrailURL" placeholder="Leave empty for internal proxy, or enter custom endpoint">
                 </div>
                 <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                    <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('')">Internal Proxy (Default)</button>
                     <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('http://localhost:8001')">Local:8001</button>
-                    <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('http://llama-guard-service.llama-guard.svc.cluster.local:8000')">Proxy</button>
-                    <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('')">Clear</button>
+                    <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('https://llama-guard-route-llama-guard.apps.sno.sandbox73.opentlc.com')">External Route</button>
+                    <button type="button" class="preset-btn" onclick="setGuardrailEndpoint('http://llama-guard-service.llama-guard.svc.cluster.local:8000')">Direct Service</button>
                 </div>
             </div>
 
@@ -863,7 +1237,8 @@
             </div>
 
             <div class="guardrail-info">
-                <strong>🛡️ Guardrail Model:</strong> Content safety detection using AI moderation<br>
+                <strong>🛡️ Guardrail Model:</strong> Llama-Guard-3-1B (Content safety detection)<br>
+                <strong>Default:</strong> Uses internal proxy to llama-guard-service<br>
                 <strong>Detection:</strong> Inappropriate, harmful, or offensive content<br>
                 <strong>Action:</strong> Highlights flagged content in responses
             </div>
@@ -923,6 +1298,63 @@
                 </div>
                 <textarea id="responseText" class="response-display" placeholder="VLM responses will appear here...">VLM responses will appear here...</textarea>
             </div>
+
+            <div class="history-section">
+            <div class="history-header">
+                <h3>
+                    <i class="fas fa-history"></i>
+                    Violation History
+                </h3>
+                <button id="clearHistoryBtn" class="btn-clear-history" onclick="clearViolationHistory()">
+                    <i class="fas fa-trash-alt"></i>
+                    Clear History
+                </button>
+            </div>
+            <div class="history-stats">
+                <div class="stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="stat-content">
+                        <div class="stat-value" id="safeCount">0</div>
+                        <div class="stat-label">Safe</div>
+                    </div>
+                </div>
+                <div class="stat-card flagged">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="stat-content">
+                        <div class="stat-value" id="flaggedCount">0</div>
+                        <div class="stat-label">Flagged</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalChecks">0</div>
+                        <div class="stat-label">Total Checks</div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="violation-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Issues Detected</th>
+                            <th>Confidence</th>
+                            <th>Content Preview</th>
+                        </tr>
+                    </thead>
+                    <tbody id="violationTableBody">
+                        <tr class="empty-state">
+                            <td colspan="5">
+                                <i class="fas fa-info-circle"></i>
+                                No violations detected yet. Start processing to see history.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            </div>
         </div>
     </div>
 
@@ -948,13 +1380,15 @@
         
         // Smart API endpoint detection for RHAIIS/vLLM
         function getDefaultAPIEndpoint() {
-            // Always default to the Kubernetes service endpoint for rhaiis
-            return "http://rhaiis-service.rhaiis.svc.cluster.local:8000";
+            // Use internal proxy endpoint (empty string uses /v1/ proxy path)
+            // This proxies to rhaiis-service.rhaiis.svc.cluster.local:8000
+            return "";
         }
 
         function getDefaultGuardrailEndpoint() {
-            // Always default to the Kubernetes service endpoint for llama-guard
-            return "http://llama-guard-service.llama-guard.svc.cluster.local:8000";
+            // Use internal proxy endpoint (empty string uses /guardrail/ proxy path)
+            // This proxies to llama-guard-service.llama-guard.svc.cluster.local:8000
+            return "";
         }
         
         baseURL.value = getDefaultAPIEndpoint();
@@ -964,6 +1398,113 @@
         let intervalId;
         let isProcessing = false;
 
+        // Violation history tracking
+        let violationHistory = [];
+        let safeCount = 0;
+        let flaggedCount = 0;
+
+        // Format timestamp
+        function formatTimestamp(date) {
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        // Add violation record to history
+        function addViolationRecord(isSafe, issues, confidence, contentPreview) {
+            const timestamp = new Date();
+            const record = {
+                timestamp,
+                isSafe,
+                issues,
+                confidence,
+                contentPreview: contentPreview.substring(0, 500)
+            };
+
+            violationHistory.unshift(record); // Add to beginning
+            if (violationHistory.length > 100) {
+                violationHistory.pop(); // Keep only last 100
+            }
+
+            // Update statistics
+            if (isSafe) {
+                safeCount++;
+            } else {
+                flaggedCount++;
+            }
+            updateStatistics();
+            updateViolationTable();
+        }
+
+        // Update statistics display
+        function updateStatistics() {
+            document.getElementById('safeCount').textContent = safeCount;
+            document.getElementById('flaggedCount').textContent = flaggedCount;
+            document.getElementById('totalChecks').textContent = safeCount + flaggedCount;
+        }
+
+        // Update violation table
+        function updateViolationTable() {
+            const tbody = document.getElementById('violationTableBody');
+            
+            if (violationHistory.length === 0) {
+                tbody.innerHTML = `
+                    <tr class="empty-state">
+                        <td colspan="5">
+                            <i class="fas fa-info-circle"></i>
+                            No violations detected yet. Start processing to see history.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = violationHistory.map(record => {
+                const statusBadge = record.isSafe 
+                    ? '<span class="status-badge safe"><i class="fas fa-check-circle"></i> Safe</span>'
+                    : '<span class="status-badge flagged"><i class="fas fa-exclamation-triangle"></i> Flagged</span>';
+                
+                const issuesText = record.isSafe ? 'None' : record.issues.join(', ');
+                
+                const confidencePercent = (record.confidence * 100).toFixed(1);
+                const confidenceClass = record.confidence >= 0.8 ? '' : (record.confidence >= 0.5 ? 'medium' : 'low');
+                const confidenceBar = `
+                    <div class="confidence-bar">
+                        <span class="confidence-value">${confidencePercent}%</span>
+                        <div class="confidence-progress">
+                            <div class="confidence-fill ${confidenceClass}" style="width: ${confidencePercent}%"></div>
+                        </div>
+                    </div>
+                `;
+
+                const rowClass = record.isSafe ? '' : 'flagged-row';
+                
+                return `
+                    <tr class="${rowClass}">
+                        <td>${formatTimestamp(record.timestamp)}</td>
+                        <td>${statusBadge}</td>
+                        <td>${issuesText}</td>
+                        <td>${confidenceBar}</td>
+                        <td><div class="content-preview" title="${escapeHtml(record.contentPreview)}">${escapeHtml(record.contentPreview)}</div></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Clear violation history
+        function clearViolationHistory() {
+            if (violationHistory.length === 0) return;
+            
+            if (confirm('Are you sure you want to clear the violation history?')) {
+                violationHistory = [];
+                safeCount = 0;
+                flaggedCount = 0;
+                updateStatistics();
+                updateViolationTable();
+            }
+        }
+
         // Preset endpoint functions
         function setPresetEndpoint(url) {
             baseURL.value = url;
@@ -972,11 +1513,11 @@
             // Update status message based on whether endpoint is set
             if (stream) {
                 if (url.trim()) {
-                    updateStatus('ready', 'Camera ready - Click start to begin', 'check-circle');
-                    setResponseText("Camera access granted. RHAIIS vLLM endpoint configured. Ready to start processing with VLM.");
+                    updateStatus('ready', 'Camera ready - Using custom endpoint', 'check-circle');
+                    setResponseText(`Camera access granted. Using custom vLLM endpoint: ${url}\nReady to start processing with VLM.`);
                 } else {
-                    updateStatus('ready', 'Camera ready - Using proxy endpoint', 'check-circle');
-                    setResponseText("Camera access granted. Using proxy endpoint for RHAIIS vLLM API calls. Ready to start processing with VLM.");
+                    updateStatus('ready', 'Camera ready - Using internal proxy', 'check-circle');
+                    setResponseText("Camera access granted. Using internal proxy to rhaiis-service.\nReady to start processing with VLM.");
                 }
             }
         }
@@ -1062,7 +1603,7 @@
                 
                 // Test the vLLM API endpoint with a simple chat completion request
                 const testPayload = {
-                    model: "Qwen/Qwen2.5-VL-3B-Instruct",
+                    model: "Qwen/Qwen2-VL-2B-Instruct",
                     max_tokens: 20,
                     messages: [
                         { role: "user", content: "Hello, can you respond?" }
@@ -1088,7 +1629,7 @@
                     const data = await response.json();
                     updateStatus('ready', 'vLLM connection successful', 'check-circle');
                     const serverInfo = baseURL.value.trim() || 'proxy endpoint';
-                    setResponseText(`✅ RHAIIS vLLM connection successful!\nEndpoint: ${serverInfo}\nModel: Vision Language Model (Qwen2.5-VL-3B-Instruct)\nTest Response: ${data.choices?.[0]?.message?.content || 'API responded correctly'}`);
+                    setResponseText(`✅ RHAIIS vLLM connection successful!\nEndpoint: ${serverInfo}\nModel: Vision Language Model (Qwen2-VL-2B-Instruct)\nTest Response: ${data.choices?.[0]?.message?.content || 'API responded correctly'}`);
                 } else {
                     const errorText = await response.text();
                     updateStatus('ready', 'Server reachable but API error', 'exclamation-triangle');
@@ -1169,16 +1710,12 @@
                     mode: 'cors',
                     signal: controller.signal,
                     body: JSON.stringify({
-                        model: "content-moderation",
+                        model: "meta-llama/Llama-Guard-3-1B",
                         max_tokens: 100,
                         messages: [
                             { 
-                                role: "system", 
-                                content: "You are a content moderation system. Analyze the following text and respond with 'SAFE' if the content is appropriate, or 'FLAGGED: [reason]' if it contains inappropriate, harmful, offensive, or unsafe content. Be specific about what was flagged." 
-                            },
-                            { 
                                 role: "user", 
-                                content: `Please analyze this content: "${text}"` 
+                                content: text
                             }
                         ]
                     })
@@ -1191,10 +1728,11 @@
                 }
 
                 const data = await response.json();
-                const result = data.choices[0].message.content.trim();
+                const result = data.choices[0].message.content.trim().toLowerCase();
                 
-                const is_safe = result.toUpperCase().startsWith('SAFE');
-                const flagged_content = is_safe ? [] : [result.replace(/^FLAGGED:\s*/i, '')];
+                // Llama Guard returns "safe" or "unsafe" with category information
+                const is_safe = result.includes('safe') && !result.includes('unsafe');
+                const flagged_content = is_safe ? [] : [result];
                 
                 return {
                     success: true,
@@ -1316,7 +1854,7 @@
                 const apiUrl = baseURL.value.trim() ? `${baseURL.value}/v1/chat/completions` : '/v1/chat/completions';
                 
                 const payload = {
-                    model: "Qwen/Qwen2.5-VL-3B-Instruct",
+                    model: "Qwen/Qwen2-VL-2B-Instruct",
                     max_tokens: 150,
                     temperature: 0.7,
                     messages: [
@@ -1391,11 +1929,11 @@
                 
                 // Check if API endpoint is set
                 if (!baseURL.value.trim()) {
-                    updateStatus('ready', 'Camera ready - Using proxy endpoint', 'check-circle');
-                    setResponseText("Camera access granted. Using proxy endpoint for RHAIIS vLLM API calls. Ready to start processing with VLM.");
+                    updateStatus('ready', 'Camera ready - Using internal proxy', 'check-circle');
+                    setResponseText("✅ Camera access granted.\n\n🔄 Using internal proxy to rhaiis-service\n📹 Ready to start VLM processing");
                 } else {
-                    updateStatus('ready', 'Camera ready - Click start to begin', 'check-circle');
-                    setResponseText("Camera access granted. RHAIIS vLLM endpoint configured. Ready to start processing with VLM.");
+                    updateStatus('ready', 'Camera ready - Custom endpoint configured', 'check-circle');
+                    setResponseText(`✅ Camera access granted.\n\n🌐 Custom endpoint: ${baseURL.value}\n📹 Ready to start VLM processing`);
                 }
             } catch (err) {
                 console.error("Error accessing camera:", err);
@@ -1403,11 +1941,11 @@
                 
                 // Show user-friendly error message
                 if (err.name === 'NotAllowedError') {
-                    setResponseText("Camera access was denied. Please allow camera permissions and refresh the page.");
+                    setResponseText("❌ Camera access was denied. Please allow camera permissions and refresh the page.");
                 } else if (err.name === 'NotFoundError') {
-                    setResponseText("No camera found. Please connect a camera and refresh the page.");
+                    setResponseText("❌ No camera found. Please connect a camera and refresh the page.");
                 } else {
-                    setResponseText(`Camera error: ${err.message}. Please check your camera and try again.`);
+                    setResponseText(`❌ Camera error: ${err.message}\n\nPlease check your camera and try again.`);
                 }
             }
         }
@@ -1461,6 +1999,9 @@
                             setResponseText(response, false);
                             hideWarningBanner();
                             
+                            // Add to violation history
+                            addViolationRecord(true, [], guardrailCheck.confidence, response);
+                            
                             console.log('✅ Guardrail check: Content SAFE');
                         } else {
                             // Content flagged - show warnings
@@ -1479,6 +2020,9 @@
                             // Highlight flagged content in the response
                             const highlightedResponse = highlightFlaggedContent(response, guardrailCheck.flagged_content);
                             setResponseHTML(highlightedResponse, true);
+                            
+                            // Add to violation history
+                            addViolationRecord(false, guardrailCheck.flagged_content, guardrailCheck.confidence, response);
                             
                             console.warn('⚠️ Guardrail check: Content FLAGGED', guardrailCheck.flagged_content);
                             

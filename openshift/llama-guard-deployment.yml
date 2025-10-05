@@ -1,3 +1,21 @@
+# Prerequisites and Deployment Steps:
+#
+# 1. Create the namespace:
+#    oc create namespace llama-guard
+#
+# 2. Create docker-secret for pulling images from registry.redhat.io:
+#    oc create secret generic docker-secret --from-file=.dockercfg=$HOME/.config/containers/auth.json --type=kubernetes.io/dockercfg -n llama-guard
+#
+# 3. Update the HF_TOKEN in the Secret below (line 37) with your Hugging Face token
+#
+# 4. Ensure GPU time-slicing is configured (see gpu-time-slicing-config.yaml)
+#
+# 5. Deploy:
+#    oc apply -f openshift/llama-guard-deployment.yml
+#
+# Note: This deployment uses Llama-Guard-3-1B model with 50% GPU memory utilization
+#       to fit within shared GPU time-slicing constraints (~2-3 GiB)
+
 ---
 apiVersion: v1
 kind: Namespace
@@ -26,7 +44,7 @@ metadata:
   namespace: llama-guard
 type: Opaque
 stringData:
-  HF_TOKEN: "YOUR_HUGGINGFACE_TOKEN_HERE"
+  HF_TOKEN: "YOUR_HUGGINGFACE_TOKEN_HERE"  # Replace with your actual HF token
 
 ---
 apiVersion: apps/v1
@@ -77,8 +95,9 @@ spec:
             - vllm.entrypoints.openai.api_server
           args:
             - '--port=8000'
-            - '--model=meta-llama/Llama-Guard-3-8B'
+            - '--model=meta-llama/Llama-Guard-3-1B'
             - '--tensor-parallel-size=1'
+            - '--gpu-memory-utilization=0.5'
           ports:
             - containerPort: 8000
               protocol: TCP

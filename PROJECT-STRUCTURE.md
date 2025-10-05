@@ -17,6 +17,7 @@ vlm-demo/
 │   └── gpu-time-slicing-config.yaml               # Time-slicing ConfigMap only
 │
 ├── scripts/                       # Automation scripts
+│   ├── deploy-to-openshift.sh         # Automated web app deployment
 │   ├── enable-gpu-timeslicing.sh      # Enable time-slicing on existing setup
 │   ├── verify-gpu-timeslicing.sh      # Verify time-slicing configuration
 │   ├── check-current-gpu-status.sh    # Check GPU allocation status
@@ -60,6 +61,9 @@ Contains all OpenShift manifests for deploying the VLM demo and infrastructure.
 ### `scripts/`
 Automation scripts for building, deploying, and managing the infrastructure.
 
+**Deployment:**
+- `deploy-to-openshift.sh`: Automated web application deployment with service verification
+
 **GPU Management:**
 - `enable-gpu-timeslicing.sh`: Automated script to enable GPU time-slicing on an existing GPU Operator
 - `verify-gpu-timeslicing.sh`: Verify that GPU time-slicing is correctly configured
@@ -71,13 +75,16 @@ Automation scripts for building, deploying, and managing the infrastructure.
 
 **Usage:**
 ```bash
-# Run scripts from the scripts/ directory
+# Deploy web application (recommended)
+./scripts/deploy-to-openshift.sh
+
+# Run other scripts from root with relative paths
+./scripts/enable-gpu-timeslicing.sh
+./scripts/verify-gpu-timeslicing.sh
+
+# Or from the scripts/ directory
 cd scripts/
 ./enable-gpu-timeslicing.sh
-./verify-gpu-timeslicing.sh
-
-# Or from root with relative paths
-./scripts/enable-gpu-timeslicing.sh
 ```
 
 ### `docs/`
@@ -147,12 +154,26 @@ oc get pods -n llama-guard
 
 ### 4. Build and Deploy Web Application
 
+**Option A: Automated Deployment (Recommended)**
+
 ```bash
 # Build containers
-cd scripts/
-./build-and-push-prod.sh
+./scripts/build-and-push-prod.sh
 
-# Deploy web app
+# Deploy web app with automated verification
+./scripts/deploy-to-openshift.sh
+
+# The script will verify vLLM and Llama Guard services
+# are running before deploying the web application
+```
+
+**Option B: Manual Deployment**
+
+```bash
+# Build containers
+./scripts/build-and-push-prod.sh
+
+# Deploy web app manually
 oc apply -f openshift/<your-web-deployment>.yaml
 ```
 
@@ -194,7 +215,7 @@ When referencing files from scripts:
 │           ▲                               ▲                      │
 │           │                               │                      │
 │  ┌────────┴───────────────────────────────┴────────────────┐    │
-│  │              Web Application (smolvlm-demo)             │    │
+│  │              Web Application (vlm-demo)                 │    │
 │  │  • User Interface       • API Integration               │    │
 │  └─────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘

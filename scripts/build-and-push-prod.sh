@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SmolVLM Enterprise Production - Container Build and Push Script
+# VLM Demo Enterprise Production - Container Build and Push Script
 # This script builds production web container and pushes it to a container registry
 # Note: RHAIIS is deployed separately using rhaiis-deployment.yml
 
@@ -8,7 +8,7 @@ set -e
 
 # Configuration
 REGISTRY="quay.io/rh_ee_micyang"
-WEB_PROD_IMAGE="smolvlm-web-prod"
+WEB_PROD_IMAGE="vlm-demo-web-prod"
 TAG="0.1"
 
 # Build configuration
@@ -23,7 +23,7 @@ BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 SmolVLM Enterprise Production - Container Build Script${NC}"
+echo -e "${BLUE}🚀 VLM Demo Enterprise Production - Container Build Script${NC}"
 echo -e "${PURPLE}🌐 Production Web Container Build${NC}"
 echo "=============================================================="
 
@@ -118,18 +118,20 @@ echo "   oc apply -f openshift/openshift-deployment-prod.yaml"
 echo ""
 echo -e "${YELLOW}3. Check deployment status:${NC}"
 echo "   oc get pods -n rhaiis"
-echo "   oc get pods -n smolvlm-demo-prod"
-echo "   oc get routes -n smolvlm-demo-prod"
+echo "   oc get pods -n llama-guard"
+echo "   oc get pods -n vlm-demo"
+echo "   oc get routes -n vlm-demo"
 echo ""
 echo -e "${YELLOW}4. Monitor RHAIIS vLLM model loading:${NC}"
 echo "   oc logs -f deployment/rhaiis -n rhaiis"
+echo "   oc logs -f deployment/llama-guard -n llama-guard"
 echo ""
 echo -e "${YELLOW}5. Test vLLM API endpoint:${NC}"
 echo "   oc port-forward service/rhaiis-service 8000:8000 -n rhaiis"
 echo "   curl http://localhost:8000/v1/models"
 echo ""
 echo -e "${YELLOW}6. Access the production application:${NC}"
-echo "   oc get route smolvlm-demo-prod-main-route -n smolvlm-demo-prod -o jsonpath='{.spec.host}'"
+echo "   oc get route vlm-demo-route -n vlm-demo -o jsonpath='{.spec.host}'"
 echo ""
 echo -e "${YELLOW}📝 Production Images built:${NC}"
 echo "   ${REGISTRY}/${WEB_PROD_IMAGE}:${TAG} (Production Web Application)"
@@ -137,10 +139,11 @@ echo ""
 echo -e "${PURPLE}🏢 Enterprise Features:${NC}"
 echo "   ✓ Red Hat AI Inference Server (RHAIIS) deployed separately"
 echo "   ✓ vLLM backend for high-performance inference"
-echo "   ✓ SmolVLM-500M-Instruct model"
+echo "   ✓ Qwen2-VL-2B-Instruct model (Vision Language Model)"
+echo "   ✓ Llama-Guard-3-1B model (Content Safety Guardrails)"
 echo "   ✓ Production web application with direct RHAIIS integration"
 echo "   ✓ Enhanced security and resource management"
-echo "   ✓ Horizontal Pod Autoscaling"
+echo "   ✓ GPU time-slicing for efficient resource usage"
 echo "   ✓ Network policies and security compliance"
 echo ""
 if [[ "$BUILD_MULTI_ARCH" == "true" ]]; then
