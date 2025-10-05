@@ -936,7 +936,14 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.875rem;
+            table-layout: fixed;
         }
+        
+        .violation-table col:nth-child(1) { width: 140px; }
+        .violation-table col:nth-child(2) { width: 120px; }
+        .violation-table col:nth-child(3) { width: 180px; }
+        .violation-table col:nth-child(4) { width: 100px; }
+        .violation-table col:nth-child(5) { width: auto; }
 
         .violation-table thead {
             background: var(--bg-secondary);
@@ -951,6 +958,8 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-size: 0.75rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .violation-table tbody tr {
@@ -1012,6 +1021,9 @@
         .violation-table td {
             padding: 1rem;
             color: var(--text-primary);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            vertical-align: top;
         }
 
         .violation-table .empty-state td {
@@ -1362,12 +1374,19 @@
             </div>
             <div class="table-container">
                 <table class="violation-table">
+                    <colgroup>
+                        <col style="width: 140px;">
+                        <col style="width: 120px;">
+                        <col style="width: 180px;">
+                        <col style="width: 100px;">
+                        <col>
+                    </colgroup>
                     <thead>
                         <tr>
-                            <th style="width: 140px;">Time</th>
-                            <th style="width: 120px;">Status</th>
-                            <th style="width: 180px;">Issues Detected</th>
-                            <th style="width: 100px;">Confidence</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Issues Detected</th>
+                            <th>Confidence</th>
                             <th>Details</th>
                         </tr>
                     </thead>
