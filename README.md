@@ -2,14 +2,17 @@
 
 ![demo](./assets/demo.png)
 
-This repository is a modern demo for how to use vLLM, a high-performance AI inference engine, to serve multiple models for real-time vision language understanding. The demo uses **Qwen2-VL-2B-Instruct** for vision analysis and **Llama-Guard-3-8B** for content safety, providing a beautiful, responsive web interface that captures camera frames and sends them to the AI models for analysis.
+This repository is a modern demo for how to use vLLM, a high-performance AI inference engine, to serve multiple models for real-time vision language understanding. The demo uses **Qwen2-VL-2B-Instruct** for vision analysis and **Llama-Guard-3-1B** for content safety, providing a beautiful, responsive web interface that captures camera frames and sends them to the AI models for analysis.
 
 ## Features
 
 - 🎥 **Real-time camera feed processing** with smart endpoint detection
 - 🎨 **Modern, responsive UI** with dark/light mode toggle
-- 🤖 **Customizable AI instructions** with preset options
-- ⏱️ **Adjustable frame capture intervals** (100ms to 2s)
+- 🤖 **Customizable AI instructions** with preset templates including gesture detection
+- 🛡️ **Advanced content safety guardrails** with triple-layer detection system
+- 📊 **Violation history tracking** with detailed audit logs
+- 🎯 **Gesture detection** - identifies and flags inappropriate hand gestures
+- ⏱️ **Adjustable frame capture intervals** (5s to 30s)
 - 🌐 **Web-based interface** with professional styling
 - 🚀 **Multiple deployment options** (local, container, OpenShift)
 - 📱 **Mobile-friendly design** with touch support
@@ -70,7 +73,7 @@ Deploy to OpenShift for production use with vLLM serving multiple AI models simu
 #### Architecture Overview
 The OpenShift deployment uses a **multi-model vLLM architecture** with GPU time-slicing:
 1. **Vision Model Service**: Runs vLLM with Qwen2-VL-2B-Instruct for image understanding
-2. **Guardrail Model Service**: Runs vLLM with Llama-Guard-3-8B for content safety
+2. **Guardrail Model Service**: Runs vLLM with Llama-Guard-3-1B for content safety
 3. **Web Frontend**: Serves the user interface and orchestrates API calls
 4. **GPU Time-Slicing**: Allows multiple model pods to share GPU resources efficiently
 
@@ -220,7 +223,7 @@ The OpenShift deployment described above provides enterprise-grade capabilities 
 
 The production deployment uses a sophisticated multi-model architecture:
 1. **Vision Model**: Qwen2-VL-2B-Instruct via vLLM for real-time image understanding
-2. **Guardrail Model**: Llama-Guard-3-8B via vLLM for content safety and compliance
+2. **Guardrail Model**: Llama-Guard-3-1B via vLLM for content safety and compliance
 3. **Separate Namespaces**: `rhaiis` for vision AI, `llama-guard` for safety, independent scaling
 4. **GPU Time-Slicing**: Efficiently share GPU resources across multiple model instances
 5. **Enterprise Security**: Enhanced security contexts, network policies, and compliance
@@ -252,9 +255,9 @@ See the [QUICKSTART.md](QUICKSTART.md) for complete deployment instructions.
 - **Resources**: 12Gi RAM, 4 CPU cores
 - **Namespace**: `rhaiis`
 
-**Guardrail Model (Llama-Guard-3-8B):**
+**Guardrail Model (Llama-Guard-3-1B):**
 - **Backend**: vLLM with CUDA support
-- **Model**: meta-llama/Llama-Guard-3-8B from Hugging Face
+- **Model**: meta-llama/Llama-Guard-3-1B from Hugging Face
 - **GPU**: 1 GPU share via time-slicing
 - **Storage**: 30Gi persistent volume for model caching
 - **Resources**: 12Gi RAM, 4 CPU cores
@@ -327,19 +330,61 @@ oc rollout restart deployment/llama-guard -n llama-guard
 2. **Theme Toggle**: Switch between light and dark mode using the moon/sun icon
 3. **Smart API Endpoint**: 
    - Automatically detects environment (local file vs server)
-   - Use preset buttons: "Local:8080", "Ollama", or "Clear"
+   - Use preset buttons for quick configuration
    - Manual entry supported with helpful placeholder text
-4. **Customize Instructions**: Modify the prompt to get different types of responses:
-   - "What do you see?" (default)
-   - "Describe the scene in detail"
-   - "List all visible objects in JSON format"
-   - "What colors are prominent in this image?"
-5. **Adjust Interval**: Control how frequently frames are captured (100ms to 2s)
+4. **Instruction Templates**: Choose from preset templates:
+   - **General Monitoring**: Basic scene description
+   - **Security Monitoring**: Detect suspicious activities
+   - **People Counting**: Count and track individuals
+   - **Activity Detection**: Monitor actions and movements
+   - **Gesture Detection**: Identify hand gestures including inappropriate ones
+   - **Safety Compliance**: Check for safety equipment and hazards
+   - **Traffic Monitoring**: Analyze traffic conditions
+   - **Quality Inspection**: Detect defects and quality issues
+   - **Behavior Analysis**: Analyze interactions and protocols
+5. **Adjust Interval**: Control how frequently frames are captured (5s to 30s)
 6. **Keyboard Shortcuts**: 
    - **Spacebar**: Start/stop processing
    - **Escape**: Stop processing
 7. **Status Indicators**: Visual feedback with icons and colors
 8. **Responsive Design**: Works on desktop, tablet, and mobile devices
+
+### Content Safety Features
+
+The production interface (`prod-guardrail-index.html`) includes advanced content safety capabilities:
+
+#### Triple-Layer Detection System
+
+1. **Primary Detection**: Llama-Guard-3-1B analyzes VLM outputs using 15 safety categories:
+   - S1-S14: Standard safety categories (violence, hate speech, etc.)
+   - **S15: Profanity and Offensive Gestures** - Detects inappropriate hand gestures, vulgar expressions, and offensive behavior
+
+2. **Secondary Keyword Check**: If Llama-Guard marks content as safe, a secondary keyword scanner checks for explicit gesture-related terms:
+   - "middle finger", "obscene gesture", "rude gesture", "offensive hand sign"
+   - Overrides Llama-Guard decision if gestures are explicitly described
+
+3. **Fallback Detection**: If Llama-Guard API fails, keyword-based detection activates:
+   - Extended keyword list covering offensive content and gestures
+   - Ensures content is never completely unfiltered
+
+#### Violation History & Audit Trail
+
+- **Real-time Tracking**: All content checks are logged with timestamps
+- **Status Indicators**:
+  - ✅ **Safe** (green badge): Content passed all checks
+  - ⚠️ **Flagged** (red badge): Violation detected with category codes
+  - 🔴 **Error** (orange badge): Guardrail check failed
+- **Statistics Dashboard**: Track safe count, flagged count, and total checks
+- **Detailed Records**: Each entry includes timestamp, status, issues detected, confidence score, and content preview
+- **Export Capability**: Clear history function for audit management
+
+#### Gesture Detection Configuration
+
+The system detects inappropriate hand gestures through:
+- **VLM Analysis**: Vision model identifies hand positions and gestures
+- **Explicit Prompting**: Instructs VLM to clearly describe visible gestures
+- **Anti-Hallucination**: Lower temperature (0.3) and timestamp injection prevent false positives
+- **Balanced Detection**: Only flags clearly visible offensive gestures, not inferred ones
 
 ## Performance Considerations
 
